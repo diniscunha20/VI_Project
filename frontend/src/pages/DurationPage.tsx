@@ -1,9 +1,9 @@
 import { DurationChart } from '../charts/DurationChart'
-import { eventGames } from '../demo'
+import type { EventGame } from '../catalog'
 import { Panel } from '../components/Panel'
 
-export function DurationPage({ minutes }: { minutes: number }) {
-  return <Panel title={`Distribuição das durações · ${eventGames.length} jogos de Halloween`} description="Todos os jogos da amostra, agrupados em intervalos de 30 minutos.">
-    <div className="chart-scroll"><DurationChart minutes={minutes} /></div>
+export function DurationPage({ games, minutes }: { games: EventGame[]; minutes: number }) {
+  return <Panel title={`Distribuição das durações · ${games.length} jogos de Halloween`} description="Jogos do catálogo no recorte de Halloween, em intervalos de 30 minutos até 180 minutos.">
+    <div className="chart-scroll"><DurationChart games={games} minutes={minutes} /></div>
   </Panel>
 }

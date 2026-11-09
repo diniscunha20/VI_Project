@@ -1,17 +1,17 @@
 import { bin, mean, scaleLinear } from 'd3'
-import { eventGames } from '../demo'
+import type { EventGame } from '../catalog'
 
 const grey = '#8b97a6'
 const orange = '#bd5005'
 
-export function DurationChart({ minutes }: { minutes: number }) {
-  const groups = bin<(typeof eventGames)[number], number>()
-    .value(game => game.minutes)
+export function DurationChart({ games, minutes }: { games: EventGame[]; minutes: number }) {
+  const groups = bin<EventGame, number>()
+    .value(game => Math.min(game.minutes, 180))
     .domain([0, 210])
-    .thresholds([30, 60, 90, 120, 150, 180])(eventGames)
+    .thresholds([30, 60, 90, 120, 150, 180])(games)
   const x = scaleLinear([0, 210], [55, 735])
-  const y = scaleLinear([0, 60], [245, 28])
-  const average = mean(eventGames, game => game.minutes) ?? 0
+  const y = scaleLinear([0, Math.max(1, ...groups.map(group => group.length))], [245, 28]).nice()
+  const average = mean(games, game => game.minutes) ?? 0
   const labels = ['0–30', '30–60', '60–90', '90–120', '120–150', '150–180', '180+']
 
   return <svg viewBox="0 0 760 290" role="img" aria-label="Histograma da duração dos jogos">
@@ -33,8 +33,8 @@ export function DurationChart({ minutes }: { minutes: number }) {
     })}
     <line x1={x(minutes)} x2={x(minutes)} y1={51} y2={245} stroke={orange} strokeWidth={2} strokeDasharray="5 5" />
     <text x={x(minutes) + 8} y={52} fill={orange}>limite {minutes} min</text>
-    <line x1={x(average)} x2={x(average)} y1={33} y2={245} stroke="currentColor" strokeDasharray="5 5" />
-    <text className="value" x={x(average) + 8} y={37}>média {Math.round(average)} min</text>
+    <line x1={x(Math.min(average, 180))} x2={x(Math.min(average, 180))} y1={33} y2={245} stroke="currentColor" strokeDasharray="5 5" />
+    <text className="value" x={x(Math.min(average, 180)) + 8} y={37}>média {Math.round(average)} min</text>
     <text x={395} y={284} textAnchor="middle">Duração em minutos</text>
   </svg>
 }

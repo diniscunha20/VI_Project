@@ -1,23 +1,26 @@
 import { lineRadial } from 'd3'
-import { similar } from '../demo'
+import type { GameProfile } from '../catalog'
+import { decimal } from '../format'
 
 const orange = '#bd5005'
 
 const radarLabels = ['Duração', 'Compl.', 'Idade', 'Nota', 'Jogadores']
-const radarMax = [60, 5, 16, 10, 8]
 const radarAngle = (index: number) => index * 2 * Math.PI / radarLabels.length
 const radarPath = lineRadial<number>().angle((_, index) => radarAngle(index % radarLabels.length)).radius(value => value * 63)
 const radarShape = (values: number[]) => radarPath([...values, values[0]])
-const normalize = (values: number[]) => values.map((value, index) => value / radarMax[index])
 
-export function RadarCharts({ reference, count }: { reference: string; count: number }) {
-  const base = similar.find(game => game.name === reference) ?? similar[0]
+export function RadarCharts({ profiles, reference, count }: { profiles: GameProfile[]; reference: string; count: number }) {
+  const base = profiles.find(game => game.id === reference) ?? profiles[0]
+  if (!base) return null
+
+  const maxima = radarLabels.map((_, index) => Math.max(...profiles.map(game => game.values[index])))
+  const normalize = (values: number[]) => values.map((value, index) => value / maxima[index])
   const baseProfile = normalize(base.values)
   const distance = (game: typeof base) => normalize(game.values)
     .reduce((sum, value, index) => sum + (value - baseProfile[index]) ** 2, 0)
-  const matches = similar.filter(game => game !== base).sort((a, b) => distance(a) - distance(b))
+  const matches = profiles.filter(game => game !== base).sort((a, b) => distance(a) - distance(b))
   const cards = [base, ...matches.slice(0, count)]
-  return <div className="radars">{cards.map(game => <article key={game.name} className={game === base ? 'radar reference' : 'radar'}>
+  return <div className="radars">{cards.map(game => <article key={game.id} className={game === base ? 'radar reference' : 'radar'}>
     <span className="eyebrow">{game === base ? 'Referência' : 'Parecido'}</span>
     <h3>{game.name}</h3>
     <svg viewBox="0 0 240 184" role="img" aria-label={`Perfil de ${game.name}`}>
@@ -34,6 +37,6 @@ export function RadarCharts({ reference, count }: { reference: string; count: nu
         {game !== base && <path d={radarShape(baseProfile) ?? ''} fill="none" stroke={orange} strokeDasharray="4 4" strokeWidth={2} />}
       </g>
     </svg>
-    <small>{game.values[0]} min · {game.values[1].toLocaleString('pt-PT')} compl. · {game.values[2]}+ anos · {game.values[3].toLocaleString('pt-PT')} nota · {game.players} jog.</small>
+    <small>{game.values[0]} min · {decimal(game.values[1])} compl. · {game.values[2]}+ anos · {decimal(game.values[3])} nota · {game.players} jog.</small>
   </article>)}</div>
 }

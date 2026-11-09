@@ -13,7 +13,7 @@ export function EventControls({ minutes, weight, onMinutesChange, onWeightChange
     onWeightChange(2.5)
   }
 
-  return <Controls title="Filtrar jogos" note="Os limites são partilhados pelas vistas do evento.">
+  return <Controls title="Filtrar jogos" note="Halloween usa a categoria Horror, jogos compatíveis com grupos de 4 a 8 e pelo menos 30 avaliações.">
     <Control label="Evento" value="Halloween" options={ [['Halloween', 'Halloween']] } />
     <Control label="Duração máx. da noite" value={minutes}
       options={[30, 45, 60, 90, 120].map(value => [value, `${value} min`])} onChange={value => onMinutesChange(Number(value))} />
